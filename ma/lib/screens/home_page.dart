@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/trending_widget.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -7,9 +8,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Trending Movies and TV Shows'),
       ),
-      body: Center(
-        child: Text('Trending section coming soon'),
-      ),
+      body: TrendingWidget(),
     );
   }
 }
