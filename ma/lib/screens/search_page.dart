@@ -10,17 +10,33 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TMDBService _tmdbService = TMDBService();
   List<dynamic> searchResults = [];
-  List<String> recentSearches = []; // Placeholder for recent searches
-  bool isLoading = false; // Define isLoading as a state variable
+  List<String> recentSearches = []; // Store recent search titles
+  bool isLoading = false;
+  TextEditingController _searchController = TextEditingController();
 
   void performSearch(String query) async {
     if (query.isNotEmpty) {
-      setState(() => isLoading = true); // Indicate loading
+      setState(() => isLoading = true);
       var results = await _tmdbService.searchMoviesTVShowsActors(query);
       setState(() {
         searchResults = results['results'];
-        isLoading = false; // Loading complete
-        // Optionally update recent searches here
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        searchResults = [];
+        isLoading = false;
+      });
+    }
+  }
+
+  void addToRecentSearches(String title) {
+    if (!recentSearches.contains(title)) {
+      setState(() {
+        recentSearches.insert(0, title);
+        if (recentSearches.length > 10) {
+          recentSearches.removeRange(10, recentSearches.length);
+        }
       });
     }
   }
@@ -28,19 +44,34 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildSearchResults() {
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
-    } else {
+    } else if (searchResults.isNotEmpty) {
       return ListView.builder(
         itemCount: searchResults.length,
         itemBuilder: (context, index) {
           var result = searchResults[index];
+          String title = result['title'] ?? result['name'];
           return ListTile(
-            title: Text(result['title'] ?? result['name']),
+            title: Text(title),
             onTap: () {
-              // Implement navigation to FilmPage
+              // Add the title of the selected result to recent searches
+              addToRecentSearches(title);
+              // Implement navigation to FilmPage with the selected result
             },
           );
         },
       );
+    } else if (recentSearches.isNotEmpty) {
+      return ListView.builder(
+        itemCount: recentSearches.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(recentSearches[index]),
+            onTap: () => performSearch(recentSearches[index]),
+          );
+        },
+      );
+    } else {
+      return Center(child: Text("No recent searches"));
     }
   }
 
@@ -48,17 +79,28 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Search')),
-      body: Column(
-        children: [
-          TextField(
-            onSubmitted: performSearch,
-            decoration: InputDecoration(
-              labelText: 'Search Movies, TV Shows, Actors',
-              border: OutlineInputBorder(),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              onChanged: performSearch,
+              decoration: InputDecoration(
+                labelText: 'Search Movies, TV Shows, Actors',
+                border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    performSearch('');
+                  },
+                ),
+              ),
             ),
-          ),
-          Expanded(child: _buildSearchResults()), // Display search results
-        ],
+            Expanded(child: _buildSearchResults()),
+          ],
+        ),
       ),
     );
   }
