@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/tmdb_service.dart'; // Import your TMDB service
+import '../services/tmdb_service.dart';
 
 class TrendingWidget extends StatefulWidget {
   @override
