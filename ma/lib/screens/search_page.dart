@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/tmdb_service.dart';
-import 'film_page.dart';  // Import the FilmPage
+import '../widgets/recent_searches_widget.dart';
+import 'film_page.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TMDBService _tmdbService = TMDBService();
   List<dynamic> searchResults = [];
-  List<String> recentSearches = []; // Store recent search titles
+  List<RecentSearch> recentSearches = [];
   bool isLoading = false;
   TextEditingController _searchController = TextEditingController();
 
@@ -30,10 +31,11 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  void addToRecentSearches(String title) {
-    if (!recentSearches.contains(title)) {
+  void addToRecentSearches(String title, String imageUrl, int filmId, String mediaType) {
+    var newSearch = RecentSearch(title: title, imageUrl: imageUrl, filmId: filmId, mediaType: mediaType);
+    if (!recentSearches.any((rs) => rs.title == newSearch.title && rs.imageUrl == newSearch.imageUrl)) {
       setState(() {
-        recentSearches.insert(0, title);
+        recentSearches.insert(0, newSearch);
         if (recentSearches.length > 10) {
           recentSearches.removeRange(10, recentSearches.length);
         }
@@ -45,33 +47,41 @@ class _SearchPageState extends State<SearchPage> {
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
     } else if (searchResults.isNotEmpty) {
-      return ListView.builder(
-        itemCount: searchResults.length,
-        itemBuilder: (context, index) {
-          var result = searchResults[index];
-          String title = result['title'] ?? result['name'];
-          return ListTile(
-            title: Text(title),
-            onTap: () {
-              // Add the title of the selected result to recent searches
-              addToRecentSearches(title);
-              // Implement navigation to FilmPage with the selected result
-            },
-          );
-        },
-      );
-    } else if (recentSearches.isNotEmpty) {
-      return ListView.builder(
-        itemCount: recentSearches.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(recentSearches[index]),
-            onTap: () => performSearch(recentSearches[index]),
-          );
-        },
+      return Expanded(
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: searchResults.length > 10 ? 10 : searchResults.length,
+          itemBuilder: (context, index) {
+            var result = searchResults[index];
+            String title = result['title'] ?? result['name'];
+            String imageUrl = 'https://image.tmdb.org/t/p/w500${result['poster_path']}';
+            int filmId = result['id'];
+            String mediaType = result.containsKey('title') ? 'movie' : 'tv';
+
+            return ListTile(
+              title: Text(title),
+              leading: Image.network(
+                imageUrl,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+              ),
+              onTap: () {
+                addToRecentSearches(title, imageUrl, filmId, mediaType);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FilmPage(filmId: filmId, mediaType: mediaType),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       );
     } else {
-      return Center(child: Text("No recent searches"));
+      return SizedBox(); // Empty container when there are no search results
     }
   }
 
@@ -98,7 +108,15 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            Expanded(child: _buildSearchResults()),
+            Divider(color: Colors.grey[300]), // For visual separation
+            _buildSearchResults(),
+            Divider(color: Colors.grey[300]), // For visual separation
+            Text('Recent Searches', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: RecentSearchesWidget(
+                recentSearches: recentSearches,
+              ),
+            ),
           ],
         ),
       ),
