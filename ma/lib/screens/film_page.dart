@@ -26,6 +26,8 @@ class _FilmPageState extends State<FilmPage> {
 
   void fetchFilmData() async {
     filmDetails = await TMDBService().fetchFilmDetails(widget.filmId, widget.mediaType);
+    filmDetails['director'] = await TMDBService().fetchDirector(widget.filmId);
+    filmDetails['age_rating'] = await TMDBService().fetchPegiRating(widget.filmId);
 
     // Fetch cast details and extract the cast list from the map
     var castResponse = await TMDBService().fetchCastDetails(widget.filmId, widget.mediaType);
