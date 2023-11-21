@@ -10,18 +10,37 @@ class FilmInfoWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Director: ${details['director']}', style: TextStyle(fontSize: 16)), // Assuming 'director' is a key in details
-        Text('Genre: ${details['genres']?.first['name']}', style: TextStyle(fontSize: 16)), // Genres are usually a list
-        if (details['type'] == 'tv') ...[
-          Text('Seasons: ${details['number_of_seasons']}', style: TextStyle(fontSize: 16)),
-          Text('Episodes: ${details['number_of_episodes']}', style: TextStyle(fontSize: 16)),
-        ],
-        Text('Release Date: ${details['release_date'] ?? details['first_air_date']}', style: TextStyle(fontSize: 16)), // For movie or TV
-        Text('Summary: ${details['overview']}', style: TextStyle(fontSize: 16)),
-        Text('Length: ${details['runtime']} minutes', style: TextStyle(fontSize: 16)), // For movies
-        Text('PEGI: ${details['age_rating']}', style: TextStyle(fontSize: 16)), // Assuming 'age_rating' is a key
-        // Add more fields as per your API response structure
+        Text('Film Information', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10), // Space after title
+        if (details.containsKey('director')) 
+          infoRow('Director:', details['director']),
+        if (details['genres'] != null && details['genres'].isNotEmpty) 
+          infoRow('Genre:', details['genres'][0]['name']),
+        if (details.containsKey('release_date') || details.containsKey('first_air_date'))
+          infoRow('Release Date:', details['release_date'] ?? details['first_air_date']),
+        if (details.containsKey('overview'))
+          infoRow('Summary:', details['overview']),
+        if (details.containsKey('runtime'))
+          infoRow('Length:', '${details['runtime']} minutes'),
+        if (details.containsKey('age_rating'))
+          infoRow('PEGI:', details['age_rating']),
+        SizedBox(height: 20), // Space at the bottom
       ],
+    );
+  }
+
+  Widget infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0), // Spacing between rows
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 16, color: Colors.black),
+          children: <TextSpan>[
+            TextSpan(text: label, style: TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(text: ' $value'),
+          ],
+        ),
+      ),
     );
   }
 }
