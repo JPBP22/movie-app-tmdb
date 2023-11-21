@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/film_info_widget.dart'; // Ensure this widget is defined
-import '../widgets/cast_info_widget.dart'; // Cast Info Widget
-import '../services/tmdb_service.dart'; // Your API services
+import '../widgets/film_info_widget.dart';
+import '../widgets/cast_info_widget.dart';
+import '../services/tmdb_service.dart';
 
 class FilmPage extends StatefulWidget {
   final int filmId;
@@ -26,15 +26,9 @@ class _FilmPageState extends State<FilmPage> {
 
   void fetchFilmData() async {
     filmDetails = await TMDBService().fetchFilmDetails(widget.filmId, widget.mediaType);
+    castDetails = await TMDBService().fetchCastDetails(widget.filmId, widget.mediaType);
     filmDetails['director'] = await TMDBService().fetchDirector(widget.filmId);
     filmDetails['age_rating'] = await TMDBService().fetchPegiRating(widget.filmId);
-
-    // Fetch cast details and extract the cast list from the map
-    var castResponse = await TMDBService().fetchCastDetails(widget.filmId, widget.mediaType);
-    if (castResponse != null && castResponse is Map<String, dynamic>) {
-      castDetails = castResponse['cast']; // Assuming the list is under the 'cast' key
-    }
-
     setState(() => isLoading = false);
   }
 
@@ -46,15 +40,24 @@ class _FilmPageState extends State<FilmPage> {
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network('https://image.tmdb.org/t/p/w500${filmDetails['poster_path']}'),
                   Text(filmDetails['title'] ?? filmDetails['name'], style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text('Rating: ${filmDetails['vote_average']} / 10'),
-                  if (castDetails != null) CastInfoWidget(cast: castDetails), // Pass the extracted cast list
-                  FilmInfoWidget(details: filmDetails), // Custom widget for film info
+                  Center(
+                    child: Image.network('https://image.tmdb.org/t/p/w500${filmDetails['poster_path']}', width: MediaQuery.of(context).size.width * 0.7),
+                  ),
+                  Text('Rating: ${formatRating(filmDetails['vote_average'])} / 10'),
+                  Divider(),
+                  CastInfoWidget(cast: castDetails),
+                  Divider(),
+                  FilmInfoWidget(details: filmDetails),
                 ],
               ),
             ),
     );
+  }
+
+  String formatRating(dynamic rating) {
+    return (rating is double ? rating.toStringAsFixed(1) : rating.toString());
   }
 }
