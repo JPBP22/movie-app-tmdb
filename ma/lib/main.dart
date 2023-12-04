@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
-import 'screens/home_page.dart'; 
+import 'package:provider/provider.dart';
+import 'providers/user_provider.dart';
+import 'screens/login_page.dart';
+import 'screens/registration_page.dart';
+import 'screens/home_page.dart';
+import 'providers/user_provider.dart';
 
 void main() {
-  runApp(MyMovieApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => UserProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyMovieApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Movie App',
-      home: HomePage(), 
+      title: 'Your App Title',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginPage(),
+        '/register': (context) => RegistrationPage(),
+        '/home': (context) => HomePage(),
+      },
     );
   }
 }
