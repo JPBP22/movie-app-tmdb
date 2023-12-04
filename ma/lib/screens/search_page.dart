@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/tmdb_service.dart';
 import '../widgets/recent_searches_widget.dart';
 import 'film_page.dart';
+import 'actor_info_page.dart'; // Import ActorInfoPage
 
 class SearchPage extends StatefulWidget {
   @override
@@ -31,8 +32,15 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  void addToRecentSearches(String title, String imageUrl, int filmId, String mediaType) {
-    var newSearch = RecentSearch(title: title, imageUrl: imageUrl, filmId: filmId, mediaType: mediaType);
+  void addToRecentSearches(String title, String imageUrl, int id, String mediaType) {
+    var newSearch = RecentSearch(
+      title: title,
+      imageUrl: imageUrl,
+      personId: mediaType == 'person' ? id : null,
+      filmId: mediaType != 'person' ? id : 0, // 0 as a placeholder
+      mediaType: mediaType,
+    );
+
     if (!recentSearches.any((rs) => rs.title == newSearch.title && rs.imageUrl == newSearch.imageUrl)) {
       setState(() {
         recentSearches.insert(0, newSearch);
@@ -49,40 +57,61 @@ class _SearchPageState extends State<SearchPage> {
     } else if (searchResults.isNotEmpty) {
       return Expanded(
         child: ListView.builder(
-          shrinkWrap: true,
           itemCount: searchResults.length > 10 ? 10 : searchResults.length,
           itemBuilder: (context, index) {
             var result = searchResults[index];
-            String title = result['title'] ?? result['name'];
-            String imageUrl = 'https://image.tmdb.org/t/p/w500${result['poster_path']}';
-            int filmId = result['id'];
-            String mediaType = result.containsKey('title') ? 'movie' : 'tv';
+            String title = result['title'] ?? result['name'] ?? 'Unknown';
+            String imageUrl = 'https://image.tmdb.org/t/p/w500';
+            int id = result['id'];
+            String mediaType = result['media_type'];
 
-            return ListTile(
-              title: Text(title),
-              leading: Image.network(
-                imageUrl,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
-              ),
-              onTap: () {
-                addToRecentSearches(title, imageUrl, filmId, mediaType);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FilmPage(filmId: filmId, mediaType: mediaType),
-                  ),
-                );
-              },
-            );
+            if (mediaType == 'person') {
+              imageUrl += result['profile_path'] ?? '';
+              return ListTile(
+                title: Text(title),
+                leading: _buildImage(imageUrl),
+                onTap: () {
+                  addToRecentSearches(title, imageUrl, id, mediaType);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ActorInfoPage(actorId: id),
+                    ),
+                  );
+                },
+              );
+            } else {
+              imageUrl += result['poster_path'] ?? '';
+              return ListTile(
+                title: Text(title),
+                leading: _buildImage(imageUrl),
+                onTap: () {
+                  addToRecentSearches(title, imageUrl, id, mediaType);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FilmPage(filmId: id, mediaType: mediaType),
+                    ),
+                  );
+                },
+              );
+            }
           },
         ),
       );
     } else {
       return SizedBox(); // Empty container when there are no search results
     }
+  }
+
+  Widget _buildImage(String url) {
+    return Image.network(
+      url,
+      width: 50,
+      height: 50,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+    );
   }
 
   @override
@@ -108,14 +137,12 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            Divider(color: Colors.grey[300]), // For visual separation
+            Divider(color: Colors.grey[300]),
             _buildSearchResults(),
-            Divider(color: Colors.grey[300]), // For visual separation
+            Divider(color: Colors.grey[300]),
             Text('Recent Searches', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Expanded(
-              child: RecentSearchesWidget(
-                recentSearches: recentSearches,
-              ),
+              child: RecentSearchesWidget(recentSearches: recentSearches),
             ),
           ],
         ),

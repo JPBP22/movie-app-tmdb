@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../screens/film_page.dart';
+import '../screens/actor_info_page.dart'; // Ensure this is correctly imported
 
 class RecentSearch {
   final String title;
   final String imageUrl;
   final int? personId;
-  final int filmId;  // Added filmId to identify the movie/TV show
-  final String mediaType; // Added mediaType to distinguish between movie and tv
+  final int filmId;
+  final String mediaType;
 
   RecentSearch({
     required this.title,
@@ -42,13 +43,21 @@ class RecentSearchesWidget extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
           ),
           onTap: () {
-            // Navigate to FilmPage with the filmId and mediaType
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FilmPage(filmId: search.filmId, mediaType: search.mediaType),
-              ),
-            );
+            if (search.mediaType == 'person') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ActorInfoPage(actorId: search.personId!),
+                ),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FilmPage(filmId: search.filmId, mediaType: search.mediaType),
+                ),
+              );
+            }
           },
         );
       },
