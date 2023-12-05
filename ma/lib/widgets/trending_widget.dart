@@ -35,7 +35,7 @@ class _TrendingWidgetState extends State<TrendingWidget> {
     );
 
     return Container(
-      height: 350, // Increased height to avoid overflow
+      height: 390, // Increased height to avoid overflow
       child: PageView.builder(
         controller: controller,
         itemCount: itemCount, // Looping effect
@@ -64,7 +64,7 @@ class _TrendingWidgetState extends State<TrendingWidget> {
                   double scale = Curves.easeOut.transform(value) * 0.4 + 1;
                   return Center(
                     child: SizedBox(
-                      height: scale * 250,
+                      height: scale * 285,
                       width: scale * 180,
                       child: child,
                     ),

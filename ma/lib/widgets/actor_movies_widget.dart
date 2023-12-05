@@ -23,7 +23,7 @@ class ActorMoviesWidget extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
           ),
           title: Text(movie['title'] ?? movie['name']),
-          subtitle: Text(movie['release_date']?.substring(0, 4) ?? 'Unknown'),
+          subtitle: Text(movie['release_date'] ?? 'Unknown'),
           onTap: () {
             Navigator.push(
               context,
