@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TMDBService {
-  final String apiKey = '';
+  final String apiKey = 'key';
 
     Future<dynamic> fetchTrendingMovies() async {
     var url = Uri.parse('https://api.themoviedb.org/3/trending/movie/week?api_key=$apiKey');
@@ -92,4 +92,16 @@ class TMDBService {
         return 'Unknown';
         }   
     }
+
+      Future<dynamic> fetchActorDetails(int actorId) async {
+    var url = Uri.parse('https://api.themoviedb.org/3/person/$actorId?api_key=$apiKey&append_to_response=movie_credits');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      print('Failed to load actor details');
+      return null;
+    }
+  }
 }
