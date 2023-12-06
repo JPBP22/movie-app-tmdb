@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../entities/user.dart';
-import '../providers/user_provider.dart'; // Import UserProvider
+import '../providers/user_provider.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -49,12 +49,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
       username: _usernameController.text,
       password: _passwordController.text,
       moviesToWatchList: [],
-      moviesRated: [],
+      tvShowsToWatchList: [], // Added this line
+      moviesRated: {},
+      tvShowsRated: {},
       subscribedServices: [],
     );
     bool registered = await _authService.createUser(newUser);
     if (registered) {
-      // Set the user in the provider
       Provider.of<UserProvider>(context, listen: false).setUser(newUser);
       Navigator.pushReplacementNamed(context, '/home');
     } else {

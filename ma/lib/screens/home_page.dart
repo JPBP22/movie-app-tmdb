@@ -13,8 +13,9 @@ class HomePage extends StatelessWidget {
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.user;
 
+    // Redirect to login page if no user is found
     if (user == null) {
-      return LoginPage(); // Redirect to login page if no user is found
+      return LoginPage();
     }
 
     return Scaffold(
@@ -31,10 +32,10 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.person),
             onPressed: () {
-              // Navigate to UserPage
+              // Navigate to UserPage without passing the user object
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => UserPage(user: user)),
+                MaterialPageRoute(builder: (context) => UserPage()),
               );
             },
           ),

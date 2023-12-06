@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/film_info_widget.dart';
 import '../widgets/cast_info_widget.dart';
+import '../widgets/rate_stars_widget.dart';
+import '../widgets/add_to_watchlist_widget.dart';
 import '../services/tmdb_service.dart';
 
 class FilmPage extends StatefulWidget {
@@ -15,7 +17,7 @@ class FilmPage extends StatefulWidget {
 
 class _FilmPageState extends State<FilmPage> {
   var filmDetails;
-  List<dynamic> castDetails = []; // Adjusted to be a list
+  List<dynamic> castDetails = [];
   bool isLoading = true;
 
   @override
@@ -26,10 +28,9 @@ class _FilmPageState extends State<FilmPage> {
 
   void fetchFilmData() async {
     filmDetails = await TMDBService().fetchFilmDetails(widget.filmId, widget.mediaType);
-    
     var castResponse = await TMDBService().fetchCastDetails(widget.filmId, widget.mediaType);
     if (castResponse != null && castResponse is Map<String, dynamic>) {
-      castDetails = castResponse['cast']; // Assuming the cast list is under 'cast' key
+      castDetails = castResponse['cast'];
     }
 
     filmDetails['director'] = await TMDBService().fetchDirector(widget.filmId);
@@ -77,6 +78,9 @@ class _FilmPageState extends State<FilmPage> {
                   CastInfoWidget(cast: castDetails),
                   Divider(),
                   FilmInfoWidget(details: filmDetails),
+                  Divider(),
+                  RateStarsWidget(itemId: widget.filmId.toString(), mediaType: widget.mediaType),
+                  AddToWatchlistWidget(itemId: widget.filmId.toString(), mediaType: widget.mediaType),
                 ],
               ),
             ),

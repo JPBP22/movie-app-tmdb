@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../entities/user.dart'; 
+import '../entities/user.dart';
 
 class AuthService {
   Future<bool> createUser(User user) async {
@@ -20,13 +20,26 @@ class AuthService {
     String? userData = prefs.getString(username);
 
     if (userData != null) {
-      return User.fromMap(jsonDecode(userData));
+      Map<String, dynamic> userMap = jsonDecode(userData);
+
+      // Ensure moviesRated is correctly converted to a Map<String, double>
+      if (userMap['moviesRated'] != null) {
+        var moviesRated = userMap['moviesRated'];
+        if (moviesRated is Map) {
+          userMap['moviesRated'] = moviesRated.map<String, double>((key, value) => MapEntry(key, value.toDouble()));
+        } else {
+          // Handle the case where moviesRated is not a Map
+          // Clearing or logging an error might be necessary here
+          userMap['moviesRated'] = {};
+        }
+      }
+
+      return User.fromMap(userMap);
     }
 
     return null;
   }
 
-  // Update loginUser to return User instead of bool
   Future<User?> loginUser(String username, String password) async {
     User? user = await getUser(username);
 
